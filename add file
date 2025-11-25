@@ -1,0 +1,1441 @@
+<!doctype html>
+<html lang="en">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>School Management System</title>
+  <script src="/_sdk/data_sdk.js"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+    
+    * {
+      box-sizing: border-box;
+    }
+    
+    .sidebar-transition {
+      transition: all 0.3s ease;
+    }
+    
+    .card-hover {
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    
+    .card-hover:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    }
+    
+    .stat-card {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+    
+    .tab-button {
+      padding: 12px 24px;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      transition: all 0.2s;
+      font-weight: 500;
+    }
+    
+    .tab-button.active {
+      border-bottom-color: currentColor;
+    }
+    
+    .modal-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+    
+    .modal-backdrop.active {
+      display: flex;
+    }
+    
+    .modal-content {
+      background: white;
+      border-radius: 16px;
+      padding: 32px;
+      max-width: 600px;
+      width: 90%;
+      max-height: 90%;
+      overflow-y: auto;
+    }
+    
+    .form-group {
+      margin-bottom: 20px;
+    }
+    
+    .form-label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+      font-size: 14px;
+    }
+    
+    .form-input, .form-select, .form-textarea {
+      width: 100%;
+      padding: 10px 14px;
+      border: 2px solid #e5e7eb;
+      border-radius: 8px;
+      font-size: 14px;
+      transition: border-color 0.2s;
+    }
+    
+    .form-input:focus, .form-select:focus, .form-textarea:focus {
+      outline: none;
+      border-color: #3b82f6;
+    }
+    
+    .form-textarea {
+      resize: vertical;
+      min-height: 100px;
+    }
+    
+    .btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    
+    .btn-primary {
+      background: #3b82f6;
+      color: white;
+    }
+    
+    .btn-primary:hover:not(:disabled) {
+      background: #2563eb;
+    }
+    
+    .btn-secondary {
+      background: #6b7280;
+      color: white;
+    }
+    
+    .btn-secondary:hover:not(:disabled) {
+      background: #4b5563;
+    }
+    
+    .btn-success {
+      background: #10b981;
+      color: white;
+    }
+    
+    .btn-success:hover:not(:disabled) {
+      background: #059669;
+    }
+    
+    .btn-danger {
+      background: #ef4444;
+      color: white;
+    }
+    
+    .btn-danger:hover:not(:disabled) {
+      background: #dc2626;
+    }
+    
+    .table-container {
+      overflow-x: auto;
+      border-radius: 12px;
+      background: white;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+    
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    
+    th {
+      background: #f9fafb;
+      padding: 14px;
+      text-align: left;
+      font-weight: 600;
+      font-size: 13px;
+      color: #374151;
+      border-bottom: 2px solid #e5e7eb;
+    }
+    
+    td {
+      padding: 14px;
+      border-bottom: 1px solid #f3f4f6;
+      font-size: 14px;
+    }
+    
+    tr:last-child td {
+      border-bottom: none;
+    }
+    
+    .badge {
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 500;
+      display: inline-block;
+    }
+    
+    .badge-success {
+      background: #d1fae5;
+      color: #065f46;
+    }
+    
+    .badge-warning {
+      background: #fef3c7;
+      color: #92400e;
+    }
+    
+    .badge-danger {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+    
+    .badge-info {
+      background: #dbeafe;
+      color: #1e40af;
+    }
+    
+    .spinner {
+      border: 3px solid #f3f4f6;
+      border-top: 3px solid #3b82f6;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: white;
+      padding: 16px 24px;
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+      display: none;
+      align-items: center;
+      gap: 12px;
+      z-index: 2000;
+      animation: slideIn 0.3s ease;
+    }
+    
+    .toast.active {
+      display: flex;
+    }
+    
+    @keyframes slideIn {
+      from {
+        transform: translateX(400px);
+      }
+      to {
+        transform: translateX(0);
+      }
+    }
+    
+    .chart-container {
+      background: white;
+      padding: 24px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+    
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: #6b7280;
+    }
+    
+    .empty-state-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+      opacity: 0.5;
+    }
+  </style>
+  <style>@view-transition { navigation: auto; }</style>
+ </head>
+ <body>
+  <div id="app" style="display: flex; width: 100%; height: 100%; min-height: 100%; background: #f9fafb;"></div>
+  <div id="modalBackdrop" class="modal-backdrop">
+   <div class="modal-content">
+    <div id="modalBody"></div>
+   </div>
+  </div>
+  <div id="toast" class="toast"><span id="toastMessage"></span>
+  </div>
+  <script>
+    // Default configuration
+    const defaultConfig = {
+      school_name: "Excellence Academy",
+      school_tagline: "Empowering Future Leaders",
+      dashboard_title: "Administrator Dashboard",
+      background_color: "#f9fafb",
+      surface_color: "#ffffff",
+      text_color: "#111827",
+      primary_action_color: "#3b82f6",
+      secondary_action_color: "#6b7280",
+      font_family: "Inter",
+      font_size: 16
+    };
+
+    let allData = [];
+    let currentView = 'dashboard';
+    let currentSubView = 'overview';
+
+    // Data handler for SDK
+    const dataHandler = {
+      onDataChanged(data) {
+        allData = data;
+        renderCurrentView();
+      }
+    };
+
+    // Initialize SDKs
+    async function initializeApp() {
+      const dataResult = await window.dataSdk.init(dataHandler);
+      if (!dataResult.isOk) {
+        console.error("Failed to initialize data SDK");
+        return;
+      }
+
+      if (window.elementSdk) {
+        window.elementSdk.init({
+          defaultConfig,
+          onConfigChange: async (config) => {
+            updateStyles(config);
+            updateContent(config);
+          },
+          mapToCapabilities: (config) => ({
+            recolorables: [
+              {
+                get: () => config.background_color || defaultConfig.background_color,
+                set: (value) => {
+                  config.background_color = value;
+                  window.elementSdk.setConfig({ background_color: value });
+                }
+              },
+              {
+                get: () => config.surface_color || defaultConfig.surface_color,
+                set: (value) => {
+                  config.surface_color = value;
+                  window.elementSdk.setConfig({ surface_color: value });
+                }
+              },
+              {
+                get: () => config.text_color || defaultConfig.text_color,
+                set: (value) => {
+                  config.text_color = value;
+                  window.elementSdk.setConfig({ text_color: value });
+                }
+              },
+              {
+                get: () => config.primary_action_color || defaultConfig.primary_action_color,
+                set: (value) => {
+                  config.primary_action_color = value;
+                  window.elementSdk.setConfig({ primary_action_color: value });
+                }
+              },
+              {
+                get: () => config.secondary_action_color || defaultConfig.secondary_action_color,
+                set: (value) => {
+                  config.secondary_action_color = value;
+                  window.elementSdk.setConfig({ secondary_action_color: value });
+                }
+              }
+            ],
+            borderables: [],
+            fontEditable: {
+              get: () => config.font_family || defaultConfig.font_family,
+              set: (value) => {
+                config.font_family = value;
+                window.elementSdk.setConfig({ font_family: value });
+              }
+            },
+            fontSizeable: {
+              get: () => config.font_size || defaultConfig.font_size,
+              set: (value) => {
+                config.font_size = value;
+                window.elementSdk.setConfig({ font_size: value });
+              }
+            }
+          }),
+          mapToEditPanelValues: (config) => new Map([
+            ["school_name", config.school_name || defaultConfig.school_name],
+            ["school_tagline", config.school_tagline || defaultConfig.school_tagline],
+            ["dashboard_title", config.dashboard_title || defaultConfig.dashboard_title]
+          ])
+        });
+      }
+
+      renderApp();
+    }
+
+    function updateStyles(config) {
+      const bgColor = config.background_color || defaultConfig.background_color;
+      const surfaceColor = config.surface_color || defaultConfig.surface_color;
+      const textColor = config.text_color || defaultConfig.text_color;
+      const primaryColor = config.primary_action_color || defaultConfig.primary_action_color;
+      const secondaryColor = config.secondary_action_color || defaultConfig.secondary_action_color;
+      const fontFamily = config.font_family || defaultConfig.font_family;
+      const fontSize = config.font_size || defaultConfig.font_size;
+
+      document.body.style.fontFamily = `${fontFamily}, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif`;
+      document.body.style.fontSize = `${fontSize}px`;
+      document.body.style.color = textColor;
+
+      const app = document.getElementById('app');
+      if (app) app.style.background = bgColor;
+
+      document.querySelectorAll('.stat-card, .table-container, .chart-container, .modal-content').forEach(el => {
+        el.style.background = surfaceColor;
+        el.style.color = textColor;
+      });
+
+      document.querySelectorAll('.btn-primary').forEach(el => {
+        el.style.background = primaryColor;
+      });
+
+      document.querySelectorAll('.btn-secondary').forEach(el => {
+        el.style.background = secondaryColor;
+      });
+
+      document.querySelectorAll('h1').forEach(el => {
+        el.style.fontSize = `${fontSize * 2}px`;
+      });
+
+      document.querySelectorAll('h2').forEach(el => {
+        el.style.fontSize = `${fontSize * 1.5}px`;
+      });
+
+      document.querySelectorAll('h3').forEach(el => {
+        el.style.fontSize = `${fontSize * 1.25}px`;
+      });
+    }
+
+    function updateContent(config) {
+      const schoolName = config.school_name || defaultConfig.school_name;
+      const schoolTagline = config.school_tagline || defaultConfig.school_tagline;
+      const dashboardTitle = config.dashboard_title || defaultConfig.dashboard_title;
+
+      const headerTitle = document.getElementById('headerTitle');
+      if (headerTitle) headerTitle.textContent = schoolName;
+
+      const headerTagline = document.getElementById('headerTagline');
+      if (headerTagline) headerTagline.textContent = schoolTagline;
+
+      const dashTitle = document.getElementById('dashboardTitle');
+      if (dashTitle) dashTitle.textContent = dashboardTitle;
+    }
+
+    function renderApp() {
+      const config = window.elementSdk ? window.elementSdk.config : defaultConfig;
+      const app = document.getElementById('app');
+      
+      app.innerHTML = `
+        <div style="flex: 0 0 260px; background: ${config.surface_color || defaultConfig.surface_color}; box-shadow: 2px 0 8px rgba(0,0,0,0.08); display: flex; flex-direction: column; height: 100%;">
+          <div style="padding: 24px; border-bottom: 1px solid #e5e7eb;">
+            <h2 id="headerTitle" style="margin: 0 0 4px 0; font-size: ${(config.font_size || defaultConfig.font_size) * 1.25}px; font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; color: ${config.text_color || defaultConfig.text_color};">${config.school_name || defaultConfig.school_name}</h2>
+            <p id="headerTagline" style="margin: 0; font-size: ${(config.font_size || defaultConfig.font_size) * 0.875}px; color: ${config.secondary_action_color || defaultConfig.secondary_action_color}; font-family: ${config.font_family || defaultConfig.font_family}, sans-serif;">${config.school_tagline || defaultConfig.school_tagline}</p>
+          </div>
+          <nav style="flex: 1; overflow-y: auto; padding: 16px;">
+            ${renderSidebarItems(config)}
+          </nav>
+        </div>
+        <div style="flex: 1; display: flex; flex-direction: column; overflow: hidden; height: 100%;">
+          <header style="background: ${config.surface_color || defaultConfig.surface_color}; padding: 20px 32px; box-shadow: 0 1px 3px rgba(0,0,0,0.08);">
+            <h1 id="dashboardTitle" style="margin: 0; font-size: ${(config.font_size || defaultConfig.font_size) * 2}px; font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; color: ${config.text_color || defaultConfig.text_color};">${config.dashboard_title || defaultConfig.dashboard_title}</h1>
+          </header>
+          <main id="mainContent" style="flex: 1; overflow-y: auto; padding: 32px;">
+          </main>
+        </div>
+      `;
+
+      renderCurrentView();
+    }
+
+    function renderSidebarItems(config) {
+      const items = [
+        { id: 'dashboard', icon: '📊', label: 'Dashboard' },
+        { id: 'students', icon: '👨‍🎓', label: 'Students' },
+        { id: 'teachers', icon: '👨‍🏫', label: 'Teachers' },
+        { id: 'classes', icon: '🏫', label: 'Classes' },
+        { id: 'curriculum', icon: '📚', label: 'Curriculum' },
+        { id: 'exams', icon: '📝', label: 'Examinations' },
+        { id: 'finance', icon: '💰', label: 'Finance' },
+        { id: 'attendance', icon: '✅', label: 'Attendance' },
+        { id: 'communication', icon: '💬', label: 'Communication' }
+      ];
+
+      return items.map(item => `
+        <button onclick="switchView('${item.id}')" class="sidebar-item" style="width: 100%; padding: 12px 16px; margin-bottom: 4px; border: none; background: ${currentView === item.id ? config.primary_action_color || defaultConfig.primary_action_color : 'transparent'}; color: ${currentView === item.id ? '#ffffff' : config.text_color || defaultConfig.text_color}; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 12px; font-size: ${(config.font_size || defaultConfig.font_size) * 0.875}px; font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; text-align: left; transition: all 0.2s;">
+          <span style="font-size: ${(config.font_size || defaultConfig.font_size) * 1.25}px;">${item.icon}</span>
+          <span style="font-weight: 500;">${item.label}</span>
+        </button>
+      `).join('');
+    }
+
+    function switchView(view) {
+      currentView = view;
+      currentSubView = 'overview';
+      renderApp();
+    }
+
+    function renderCurrentView() {
+      const mainContent = document.getElementById('mainContent');
+      if (!mainContent) return;
+
+      const config = window.elementSdk ? window.elementSdk.config : defaultConfig;
+
+      switch(currentView) {
+        case 'dashboard':
+          renderDashboard(mainContent, config);
+          break;
+        case 'students':
+          renderStudents(mainContent, config);
+          break;
+        case 'teachers':
+          renderTeachers(mainContent, config);
+          break;
+        case 'classes':
+          renderClasses(mainContent, config);
+          break;
+        case 'curriculum':
+          renderCurriculum(mainContent, config);
+          break;
+        case 'exams':
+          renderExams(mainContent, config);
+          break;
+        case 'finance':
+          renderFinance(mainContent, config);
+          break;
+        case 'attendance':
+          renderAttendance(mainContent, config);
+          break;
+        case 'communication':
+          renderCommunication(mainContent, config);
+          break;
+      }
+
+      updateStyles(config);
+    }
+
+    function renderDashboard(container, config) {
+      const students = allData.filter(d => d.type === 'student');
+      const teachers = allData.filter(d => d.type === 'teacher');
+      const classes = allData.filter(d => d.type === 'class');
+      const finances = allData.filter(d => d.type === 'finance');
+      const totalRevenue = finances.reduce((sum, f) => sum + (f.amount || 0), 0);
+
+      container.innerHTML = `
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 24px; margin-bottom: 32px;">
+          <div class="stat-card">
+            <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 12px;">
+              <span style="font-size: ${(config.font_size || defaultConfig.font_size) * 2}px;">👨‍🎓</span>
+              <div>
+                <div style="font-size: ${(config.font_size || defaultConfig.font_size) * 0.875}px; color: ${config.secondary_action_color || defaultConfig.secondary_action_color}; font-family: ${config.font_family || defaultConfig.font_family}, sans-serif;">Total Students</div>
+                <div style="font-size: ${(config.font_size || defaultConfig.font_size) * 1.875}px; font-weight: 700; font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; color: ${config.text_color || defaultConfig.text_color};">${students.length}</div>
+              </div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 12px;">
+              <span style="font-size: ${(config.font_size || defaultConfig.font_size) * 2}px;">👨‍🏫</span>
+              <div>
+                <div style="font-size: ${(config.font_size || defaultConfig.font_size) * 0.875}px; color: ${config.secondary_action_color || defaultConfig.secondary_action_color}; font-family: ${config.font_family || defaultConfig.font_family}, sans-serif;">Total Teachers</div>
+                <div style="font-size: ${(config.font_size || defaultConfig.font_size) * 1.875}px; font-weight: 700; font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; color: ${config.text_color || defaultConfig.text_color};">${teachers.length}</div>
+              </div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 12px;">
+              <span style="font-size: ${(config.font_size || defaultConfig.font_size) * 2}px;">🏫</span>
+              <div>
+                <div style="font-size: ${(config.font_size || defaultConfig.font_size) * 0.875}px; color: ${config.secondary_action_color || defaultConfig.secondary_action_color}; font-family: ${config.font_family || defaultConfig.font_family}, sans-serif;">Total Classes</div>
+                <div style="font-size: ${(config.font_size || defaultConfig.font_size) * 1.875}px; font-weight: 700; font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; color: ${config.text_color || defaultConfig.text_color};">${classes.length}</div>
+              </div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 12px;">
+              <span style="font-size: ${(config.font_size || defaultConfig.font_size) * 2}px;">💰</span>
+              <div>
+                <div style="font-size: ${(config.font_size || defaultConfig.font_size) * 0.875}px; color: ${config.secondary_action_color || defaultConfig.secondary_action_color}; font-family: ${config.font_family || defaultConfig.font_family}, sans-serif;">Total Revenue</div>
+                <div style="font-size: ${(config.font_size || defaultConfig.font_size) * 1.875}px; font-weight: 700; font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; color: ${config.text_color || defaultConfig.text_color};">$${totalRevenue.toLocaleString()}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 24px;">
+          <div class="chart-container">
+            <h3 style="margin: 0 0 20px 0; font-size: ${(config.font_size || defaultConfig.font_size) * 1.25}px; font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; color: ${config.text_color || defaultConfig.text_color};">Recent Activity</h3>
+            <div style="font-size: ${(config.font_size || defaultConfig.font_size) * 0.875}px; color: ${config.secondary_action_color || defaultConfig.secondary_action_color}; font-family: ${config.font_family || defaultConfig.font_family}, sans-serif;">
+              ${allData.length === 0 ? '<div class="empty-state"><div class="empty-state-icon">📊</div><div>No activity yet</div></div>' : 
+                allData.slice(-5).reverse().map(item => `
+                  <div style="padding: 12px 0; border-bottom: 1px solid #f3f4f6;">
+                    <div style="font-weight: 500; color: ${config.text_color || defaultConfig.text_color};">${item.type}: ${item.name || item.description || 'New entry'}</div>
+                    <div style="font-size: ${(config.font_size || defaultConfig.font_size) * 0.75}px; color: ${config.secondary_action_color || defaultConfig.secondary_action_color}; margin-top: 4px;">${new Date(item.createdAt).toLocaleString()}</div>
+                  </div>
+                `).join('')
+              }
+            </div>
+          </div>
+          
+          <div class="chart-container">
+            <h3 style="margin: 0 0 20px 0; font-size: ${(config.font_size || defaultConfig.font_size) * 1.25}px; font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; color: ${config.text_color || defaultConfig.text_color};">Quick Actions</h3>
+            <div style="display: grid; gap: 12px;">
+              <button onclick="openAddModal('student')" class="btn btn-primary" style="justify-content: center; width: 100%;">
+                ➕ Add New Student
+              </button>
+              <button onclick="openAddModal('teacher')" class="btn btn-primary" style="justify-content: center; width: 100%;">
+                ➕ Add New Teacher
+              </button>
+              <button onclick="openAddModal('class')" class="btn btn-primary" style="justify-content: center; width: 100%;">
+                ➕ Create New Class
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderStudents(container, config) {
+      const students = allData.filter(d => d.type === 'student');
+
+      container.innerHTML = `
+        <div style="margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center;">
+          <h2 style="margin: 0; font-size: ${(config.font_size || defaultConfig.font_size) * 1.5}px; font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; color: ${config.text_color || defaultConfig.text_color};">Student Management</h2>
+          <button onclick="openAddModal('student')" class="btn btn-primary">
+            ➕ Add Student
+          </button>
+        </div>
+
+        ${students.length === 0 ? 
+          '<div class="empty-state"><div class="empty-state-icon">👨‍🎓</div><div style="font-family: ' + (config.font_family || defaultConfig.font_family) + ', sans-serif; font-size: ' + ((config.font_size || defaultConfig.font_size) * 1.125) + 'px;">No students yet. Add your first student!</div></div>' :
+          `<div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; font-size: ${(config.font_size || defaultConfig.font_size) * 0.875}px; color: ${config.text_color || defaultConfig.text_color};">Name</th>
+                  <th style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; font-size: ${(config.font_size || defaultConfig.font_size) * 0.875}px; color: ${config.text_color || defaultConfig.text_color};">Email</th>
+                  <th style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; font-size: ${(config.font_size || defaultConfig.font_size) * 0.875}px; color: ${config.text_color || defaultConfig.text_color};">Grade</th>
+                  <th style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; font-size: ${(config.font_size || defaultConfig.font_size) * 0.875}px; color: ${config.text_color || defaultConfig.text_color};">Class</th>
+                  <th style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; font-size: ${(config.font_size || defaultConfig.font_size) * 0.875}px; color: ${config.text_color || defaultConfig.text_color};">Status</th>
+                  <th style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; font-size: ${(config.font_size || defaultConfig.font_size) * 0.875}px; color: ${config.text_color || defaultConfig.text_color};">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${students.map(student => `
+                  <tr>
+                    <td style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; font-size: ${(config.font_size || defaultConfig.font_size) * 0.875}px; color: ${config.text_color || defaultConfig.text_color};">${student.name}</td>
+                    <td style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; font-size: ${(config.font_size || defaultConfig.font_size) * 0.875}px; color: ${config.text_color || defaultConfig.text_color};">${student.email || '-'}</td>
+                    <td style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; font-size: ${(config.font_size || defaultConfig.font_size) * 0.875}px; color: ${config.text_color || defaultConfig.text_color};">${student.grade || '-'}</td>
+                    <td style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; font-size: ${(config.font_size || defaultConfig.font_size) * 0.875}px; color: ${config.text_color || defaultConfig.text_color};">${student.class || '-'}</td>
+                    <td><span class="badge badge-success" style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif;">${student.status || 'Active'}</span></td>
+                    <td>
+                      <button onclick="openEditModal('${student.__backendId}')" class="btn btn-secondary" style="padding: 6px 12px; margin-right: 8px;">Edit</button>
+                      <button onclick="deleteRecord('${student.__backendId}')" class="btn btn-danger" style="padding: 6px 12px;">Delete</button>
+                    </td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>`
+        }
+      `;
+    }
+
+    function renderTeachers(container, config) {
+      const teachers = allData.filter(d => d.type === 'teacher');
+
+      container.innerHTML = `
+        <div style="margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center;">
+          <h2 style="margin: 0; font-size: ${(config.font_size || defaultConfig.font_size) * 1.5}px; font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; color: ${config.text_color || defaultConfig.text_color};">Teacher Management</h2>
+          <button onclick="openAddModal('teacher')" class="btn btn-primary">
+            ➕ Add Teacher
+          </button>
+        </div>
+
+        ${teachers.length === 0 ? 
+          '<div class="empty-state"><div class="empty-state-icon">👨‍🏫</div><div style="font-family: ' + (config.font_family || defaultConfig.font_family) + ', sans-serif; font-size: ' + ((config.font_size || defaultConfig.font_size) * 1.125) + 'px;">No teachers yet. Add your first teacher!</div></div>' :
+          `<div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; font-size: ${(config.font_size || defaultConfig.font_size) * 0.875}px; color: ${config.text_color || defaultConfig.text_color};">Name</th>
+                  <th style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; font-size: ${(config.font_size || defaultConfig.font_size) * 0.875}px; color: ${config.text_color || defaultConfig.text_color};">Email</th>
+                  <th style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; font-size: ${(config.font_size || defaultConfig.font_size) * 0.875}px; color: ${config.text_color || defaultConfig.text_color};">Subject</th>
+                  <th style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; font-size: ${(config.font_size || defaultConfig.font_size) * 0.875}px; color: ${config.text_color || defaultConfig.text_color};">Phone</th>
+                  <th style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; font-size: ${(config.font_size || defaultConfig.font_size) * 0.875}px; color: ${config.text_color || defaultConfig.text_color};">Status</th>
+                  <th style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; font-size: ${(config.font_size || defaultConfig.font_size) * 0.875}px; color: ${config.text_color || defaultConfig.text_color};">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${teachers.map(teacher => `
+                  <tr>
+                    <td style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; font-size: ${(config.font_size || defaultConfig.font_size) * 0.875}px; color: ${config.text_color || defaultConfig.text_color};">${teacher.name}</td>
+                    <td style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; font-size: ${(config.font_size || defaultConfig.font_size) * 0.875}px; color: ${config.text_color || defaultConfig.text_color};">${teacher.email || '-'}</td>
+                    <td style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; font-size: ${(config.font_size || defaultConfig.font_size) * 0.875}px; color: ${config.text_color || defaultConfig.text_color};">${teacher.subject || '-'}</td>
+                    <td style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; font-size: ${(config.font_size || defaultConfig.font_size) * 0.875}px; color: ${config.text_color || defaultConfig.text_color};">${teacher.phone || '-'}</td>
+                    <td><span class="badge badge-success" style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif;">${teacher.status || 'Active'}</span></td>
+                    <td>
+                      <button onclick="openEditModal('${teacher.__backendId}')" class="btn btn-secondary" style="padding: 6px 12px; margin-right: 8px;">Edit</button>
+                      <button onclick="deleteRecord('${teacher.__backendId}')" class="btn btn-danger" style="padding: 6px 12px;">Delete</button>
+                    </td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>`
+        }
+      `;
+    }
+
+    function renderClasses(container, config) {
+      const classes = allData.filter(d => d.type === 'class');
+
+      container.innerHTML = `
+        <div style="margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center;">
+          <h2 style="margin: 0; font-size: ${(config.font_size || defaultConfig.font_size) * 1.5}px; font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; color: ${config.text_color || defaultConfig.text_color};">Class Management</h2>
+          <button onclick="openAddModal('class')" class="btn btn-primary">
+            ➕ Create Class
+          </button>
+        </div>
+
+        ${classes.length === 0 ? 
+          '<div class="empty-state"><div class="empty-state-icon">🏫</div><div style="font-family: ' + (config.font_family || defaultConfig.font_family) + ', sans-serif; font-size: ' + ((config.font_size || defaultConfig.font_size) * 1.125) + 'px;">No classes yet. Create your first class!</div></div>' :
+          `<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 24px;">
+            ${classes.map(cls => `
+              <div class="stat-card card-hover">
+                <h3 style="margin: 0 0 12px 0; font-size: ${(config.font_size || defaultConfig.font_size) * 1.25}px; font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; color: ${config.text_color || defaultConfig.text_color};">${cls.name}</h3>
+                <div style="font-size: ${(config.font_size || defaultConfig.font_size) * 0.875}px; color: ${config.secondary_action_color || defaultConfig.secondary_action_color}; margin-bottom: 16px; font-family: ${config.font_family || defaultConfig.font_family}, sans-serif;">
+                  <div style="margin-bottom: 8px;"><strong>Grade:</strong> ${cls.grade || '-'}</div>
+                  <div style="margin-bottom: 8px;"><strong>Subject:</strong> ${cls.subject || '-'}</div>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                  <button onclick="openEditModal('${cls.__backendId}')" class="btn btn-secondary" style="padding: 8px 16px; flex: 1;">Edit</button>
+                  <button onclick="deleteRecord('${cls.__backendId}')" class="btn btn-danger" style="padding: 8px 16px;">Delete</button>
+                </div>
+              </div>
+            `).join('')}
+          </div>`
+        }
+      `;
+    }
+
+    function renderCurriculum(container, config) {
+      const subjects = allData.filter(d => d.type === 'subject');
+
+      container.innerHTML = `
+        <div style="margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center;">
+          <h2 style="margin: 0; font-size: ${(config.font_size || defaultConfig.font_size) * 1.5}px; font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; color: ${config.text_color || defaultConfig.text_color};">Curriculum & Subjects</h2>
+          <button onclick="openAddModal('subject')" class="btn btn-primary">
+            ➕ Add Subject
+          </button>
+        </div>
+
+        ${subjects.length === 0 ? 
+          '<div class="empty-state"><div class="empty-state-icon">📚</div><div style="font-family: ' + (config.font_family || defaultConfig.font_family) + ', sans-serif; font-size: ' + ((config.font_size || defaultConfig.font_size) * 1.125) + 'px;">No subjects yet. Add your first subject!</div></div>' :
+          `<div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; font-size: ${(config.font_size || defaultConfig.font_size) * 0.875}px; color: ${config.text_color || defaultConfig.text_color};">Subject Name</th>
+                  <th style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; font-size: ${(config.font_size || defaultConfig.font_size) * 0.875}px; color: ${config.text_color || defaultConfig.text_color};">Grade</th>
+                  <th style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; font-size: ${(config.font_size || defaultConfig.font_size) * 0.875}px; color: ${config.text_color || defaultConfig.text_color};">Description</th>
+                  <th style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; font-size: ${(config.font_size || defaultConfig.font_size) * 0.875}px; color: ${config.text_color || defaultConfig.text_color};">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${subjects.map(subject => `
+                  <tr>
+                    <td style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; font-size: ${(config.font_size || defaultConfig.font_size) * 0.875}px; color: ${config.text_color || defaultConfig.text_color};">${subject.name}</td>
+                    <td style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; font-size: ${(config.font_size || defaultConfig.font_size) * 0.875}px; color: ${config.text_color || defaultConfig.text_color};">${subject.grade || '-'}</td>
+                    <td style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; font-size: ${(config.font_size || defaultConfig.font_size) * 0.875}px; color: ${config.text_color || defaultConfig.text_color};">${subject.description || '-'}</td>
+                    <td>
+                      <button onclick="openEditModal('${subject.__backendId}')" class="btn btn-secondary" style="padding: 6px 12px; margin-right: 8px;">Edit</button>
+                      <button onclick="deleteRecord('${subject.__backendId}')" class="btn btn-danger" style="padding: 6px 12px;">Delete</button>
+                    </td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>`
+        }
+      `;
+    }
+
+    function renderExams(container, config) {
+      const exams = allData.filter(d => d.type === 'exam');
+
+      container.innerHTML = `
+        <div style="margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center;">
+          <h2 style="margin: 0; font-size: ${(config.font_size || defaultConfig.font_size) * 1.5}px; font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; color: ${config.text_color || defaultConfig.text_color};">Examinations & Results</h2>
+          <button onclick="openAddModal('exam')" class="btn btn-primary">
+            ➕ Add Exam Result
+          </button>
+        </div>
+
+        ${exams.length === 0 ? 
+          '<div class="empty-state"><div class="empty-state-icon">📝</div><div style="font-family: ' + (config.font_family || defaultConfig.font_family) + ', sans-serif; font-size: ' + ((config.font_size || defaultConfig.font_size) * 1.125) + 'px;">No exam results yet. Add your first exam result!</div></div>' :
+          `<div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; font-size: ${(config.font_size || defaultConfig.font_size) * 0.875}px; color: ${config.text_color || defaultConfig.text_color};">Student</th>
+                  <th style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; font-size: ${(config.font_size || defaultConfig.font_size) * 0.875}px; color: ${config.text_color || defaultConfig.text_color};">Subject</th>
+                  <th style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; font-size: ${(config.font_size || defaultConfig.font_size) * 0.875}px; color: ${config.text_color || defaultConfig.text_color};">Score</th>
+                  <th style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; font-size: ${(config.font_size || defaultConfig.font_size) * 0.875}px; color: ${config.text_color || defaultConfig.text_color};">Date</th>
+                  <th style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; font-size: ${(config.font_size || defaultConfig.font_size) * 0.875}px; color: ${config.text_color || defaultConfig.text_color};">Grade</th>
+                  <th style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; font-size: ${(config.font_size || defaultConfig.font_size) * 0.875}px; color: ${config.text_color || defaultConfig.text_color};">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${exams.map(exam => {
+                  const grade = exam.score >= 90 ? 'A' : exam.score >= 80 ? 'B' : exam.score >= 70 ? 'C' : exam.score >= 60 ? 'D' : 'F';
+                  const badgeClass = exam.score >= 70 ? 'badge-success' : exam.score >= 60 ? 'badge-warning' : 'badge-danger';
+                  return `
+                    <tr>
+                      <td style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; font-size: ${(config.font_size || defaultConfig.font_size) * 0.875}px; color: ${config.text_color || defaultConfig.text_color};">${exam.name}</td>
+                      <td style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; font-size: ${(config.font_size || defaultConfig.font_size) * 0.875}px; color: ${config.text_color || defaultConfig.text_color};">${exam.subject || '-'}</td>
+                      <td style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; font-size: ${(config.font_size || defaultConfig.font_size) * 0.875}px; color: ${config.text_color || defaultConfig.text_color};">${exam.score || 0}%</td>
+                      <td style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; font-size: ${(config.font_size || defaultConfig.font_size) * 0.875}px; color: ${config.text_color || defaultConfig.text_color};">${exam.date ? new Date(exam.date).toLocaleDateString() : '-'}</td>
+                      <td><span class="badge ${badgeClass}" style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif;">${grade}</span></td>
+                      <td>
+                        <button onclick="openEditModal('${exam.__backendId}')" class="btn btn-secondary" style="padding: 6px 12px; margin-right: 8px;">Edit</button>
+                        <button onclick="deleteRecord('${exam.__backendId}')" class="btn btn-danger" style="padding: 6px 12px;">Delete</button>
+                      </td>
+                    </tr>
+                  `;
+                }).join('')}
+              </tbody>
+            </table>
+          </div>`
+        }
+      `;
+    }
+
+    function renderFinance(container, config) {
+      const finances = allData.filter(d => d.type === 'finance');
+      const totalRevenue = finances.filter(f => f.status === 'paid').reduce((sum, f) => sum + (f.amount || 0), 0);
+      const totalPending = finances.filter(f => f.status === 'pending').reduce((sum, f) => sum + (f.amount || 0), 0);
+
+      container.innerHTML = `
+        <div style="margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center;">
+          <h2 style="margin: 0; font-size: ${(config.font_size || defaultConfig.font_size) * 1.5}px; font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; color: ${config.text_color || defaultConfig.text_color};">Finance & Accounting</h2>
+          <button onclick="openAddModal('finance')" class="btn btn-primary">
+            ➕ Add Transaction
+          </button>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 24px; margin-bottom: 32px;">
+          <div class="stat-card">
+            <div style="font-size: ${(config.font_size || defaultConfig.font_size) * 0.875}px; color: ${config.secondary_action_color || defaultConfig.secondary_action_color}; margin-bottom: 8px; font-family: ${config.font_family || defaultConfig.font_family}, sans-serif;">Total Revenue</div>
+            <div style="font-size: ${(config.font_size || defaultConfig.font_size) * 1.875}px; font-weight: 700; color: #10b981; font-family: ${config.font_family || defaultConfig.font_family}, sans-serif;">$${totalRevenue.toLocaleString()}</div>
+          </div>
+          <div class="stat-card">
+            <div style="font-size: ${(config.font_size || defaultConfig.font_size) * 0.875}px; color: ${config.secondary_action_color || defaultConfig.secondary_action_color}; margin-bottom: 8px; font-family: ${config.font_family || defaultConfig.font_family}, sans-serif;">Pending Payments</div>
+            <div style="font-size: ${(config.font_size || defaultConfig.font_size) * 1.875}px; font-weight: 700; color: #f59e0b; font-family: ${config.font_family || defaultConfig.font_family}, sans-serif;">$${totalPending.toLocaleString()}</div>
+          </div>
+        </div>
+
+        ${finances.length === 0 ? 
+          '<div class="empty-state"><div class="empty-state-icon">💰</div><div style="font-family: ' + (config.font_family || defaultConfig.font_family) + ', sans-serif; font-size: ' + ((config.font_size || defaultConfig.font_size) * 1.125) + 'px;">No transactions yet. Add your first transaction!</div></div>' :
+          `<div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; font-size: ${(config.font_size || defaultConfig.font_size) * 0.875}px; color: ${config.text_color || defaultConfig.text_color};">Student Name</th>
+                  <th style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; font-size: ${(config.font_size || defaultConfig.font_size) * 0.875}px; color: ${config.text_color || defaultConfig.text_color};">Description</th>
+                  <th style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; font-size: ${(config.font_size || defaultConfig.font_size) * 0.875}px; color: ${config.text_color || defaultConfig.text_color};">Amount</th>
+                  <th style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; font-size: ${(config.font_size || defaultConfig.font_size) * 0.875}px; color: ${config.text_color || defaultConfig.text_color};">Date</th>
+                  <th style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; font-size: ${(config.font_size || defaultConfig.font_size) * 0.875}px; color: ${config.text_color || defaultConfig.text_color};">Status</th>
+                  <th style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; font-size: ${(config.font_size || defaultConfig.font_size) * 0.875}px; color: ${config.text_color || defaultConfig.text_color};">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${finances.map(finance => `
+                  <tr>
+                    <td style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; font-size: ${(config.font_size || defaultConfig.font_size) * 0.875}px; color: ${config.text_color || defaultConfig.text_color};">${finance.name}</td>
+                    <td style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; font-size: ${(config.font_size || defaultConfig.font_size) * 0.875}px; color: ${config.text_color || defaultConfig.text_color};">${finance.description || '-'}</td>
+                    <td style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; font-size: ${(config.font_size || defaultConfig.font_size) * 0.875}px; color: ${config.text_color || defaultConfig.text_color};">$${(finance.amount || 0).toLocaleString()}</td>
+                    <td style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; font-size: ${(config.font_size || defaultConfig.font_size) * 0.875}px; color: ${config.text_color || defaultConfig.text_color};">${finance.date ? new Date(finance.date).toLocaleDateString() : '-'}</td>
+                    <td><span class="badge ${finance.status === 'paid' ? 'badge-success' : 'badge-warning'}" style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif;">${finance.status || 'pending'}</span></td>
+                    <td>
+                      <button onclick="openEditModal('${finance.__backendId}')" class="btn btn-secondary" style="padding: 6px 12px; margin-right: 8px;">Edit</button>
+                      <button onclick="deleteRecord('${finance.__backendId}')" class="btn btn-danger" style="padding: 6px 12px;">Delete</button>
+                    </td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>`
+        }
+      `;
+    }
+
+    function renderAttendance(container, config) {
+      const attendance = allData.filter(d => d.type === 'attendance');
+
+      container.innerHTML = `
+        <div style="margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center;">
+          <h2 style="margin: 0; font-size: ${(config.font_size || defaultConfig.font_size) * 1.5}px; font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; color: ${config.text_color || defaultConfig.text_color};">Attendance System</h2>
+          <button onclick="openAddModal('attendance')" class="btn btn-primary">
+            ➕ Mark Attendance
+          </button>
+        </div>
+
+        ${attendance.length === 0 ? 
+          '<div class="empty-state"><div class="empty-state-icon">✅</div><div style="font-family: ' + (config.font_family || defaultConfig.font_family) + ', sans-serif; font-size: ' + ((config.font_size || defaultConfig.font_size) * 1.125) + 'px;">No attendance records yet. Mark your first attendance!</div></div>' :
+          `<div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; font-size: ${(config.font_size || defaultConfig.font_size) * 0.875}px; color: ${config.text_color || defaultConfig.text_color};">Name</th>
+                  <th style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; font-size: ${(config.font_size || defaultConfig.font_size) * 0.875}px; color: ${config.text_color || defaultConfig.text_color};">Type</th>
+                  <th style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; font-size: ${(config.font_size || defaultConfig.font_size) * 0.875}px; color: ${config.text_color || defaultConfig.text_color};">Class</th>
+                  <th style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; font-size: ${(config.font_size || defaultConfig.font_size) * 0.875}px; color: ${config.text_color || defaultConfig.text_color};">Date</th>
+                  <th style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; font-size: ${(config.font_size || defaultConfig.font_size) * 0.875}px; color: ${config.text_color || defaultConfig.text_color};">Status</th>
+                  <th style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; font-size: ${(config.font_size || defaultConfig.font_size) * 0.875}px; color: ${config.text_color || defaultConfig.text_color};">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${attendance.map(att => `
+                  <tr>
+                    <td style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; font-size: ${(config.font_size || defaultConfig.font_size) * 0.875}px; color: ${config.text_color || defaultConfig.text_color};">${att.name}</td>
+                    <td style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; font-size: ${(config.font_size || defaultConfig.font_size) * 0.875}px; color: ${config.text_color || defaultConfig.text_color};">${att.subject || 'Student'}</td>
+                    <td style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; font-size: ${(config.font_size || defaultConfig.font_size) * 0.875}px; color: ${config.text_color || defaultConfig.text_color};">${att.class || '-'}</td>
+                    <td style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; font-size: ${(config.font_size || defaultConfig.font_size) * 0.875}px; color: ${config.text_color || defaultConfig.text_color};">${att.date ? new Date(att.date).toLocaleDateString() : '-'}</td>
+                    <td><span class="badge ${att.attendance === 'present' ? 'badge-success' : 'badge-danger'}" style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif;">${att.attendance || 'absent'}</span></td>
+                    <td>
+                      <button onclick="openEditModal('${att.__backendId}')" class="btn btn-secondary" style="padding: 6px 12px; margin-right: 8px;">Edit</button>
+                      <button onclick="deleteRecord('${att.__backendId}')" class="btn btn-danger" style="padding: 6px 12px;">Delete</button>
+                    </td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>`
+        }
+      `;
+    }
+
+    function renderCommunication(container, config) {
+      const messages = allData.filter(d => d.type === 'message');
+
+      container.innerHTML = `
+        <div style="margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center;">
+          <h2 style="margin: 0; font-size: ${(config.font_size || defaultConfig.font_size) * 1.5}px; font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; color: ${config.text_color || defaultConfig.text_color};">Communication Module</h2>
+          <button onclick="openAddModal('message')" class="btn btn-primary">
+            ➕ Send Message
+          </button>
+        </div>
+
+        ${messages.length === 0 ? 
+          '<div class="empty-state"><div class="empty-state-icon">💬</div><div style="font-family: ' + (config.font_family || defaultConfig.font_family) + ', sans-serif; font-size: ' + ((config.font_size || defaultConfig.font_size) * 1.125) + 'px;">No messages yet. Send your first message!</div></div>' :
+          `<div style="display: grid; gap: 16px;">
+            ${messages.map(msg => `
+              <div class="stat-card">
+                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 12px;">
+                  <div>
+                    <h3 style="margin: 0 0 4px 0; font-size: ${(config.font_size || defaultConfig.font_size) * 1.125}px; font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; color: ${config.text_color || defaultConfig.text_color};">${msg.name || 'Announcement'}</h3>
+                    <span class="badge badge-info" style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif;">${msg.subject || 'General'}</span>
+                  </div>
+                  <div style="font-size: ${(config.font_size || defaultConfig.font_size) * 0.75}px; color: ${config.secondary_action_color || defaultConfig.secondary_action_color}; font-family: ${config.font_family || defaultConfig.font_family}, sans-serif;">${msg.date ? new Date(msg.date).toLocaleString() : ''}</div>
+                </div>
+                <p style="margin: 0 0 16px 0; font-size: ${(config.font_size || defaultConfig.font_size) * 0.875}px; color: ${config.text_color || defaultConfig.text_color}; font-family: ${config.font_family || defaultConfig.font_family}, sans-serif;">${msg.message || msg.description || ''}</p>
+                <div style="display: flex; gap: 8px;">
+                  <button onclick="deleteRecord('${msg.__backendId}')" class="btn btn-danger" style="padding: 6px 12px;">Delete</button>
+                </div>
+              </div>
+            `).join('')}
+          </div>`
+        }
+      `;
+    }
+
+    function openAddModal(type) {
+      const config = window.elementSdk ? window.elementSdk.config : defaultConfig;
+      const modalBody = document.getElementById('modalBody');
+      const modalBackdrop = document.getElementById('modalBackdrop');
+
+      let formFields = '';
+
+      switch(type) {
+        case 'student':
+          formFields = `
+            <h2 style="margin: 0 0 24px 0; font-size: ${(config.font_size || defaultConfig.font_size) * 1.5}px; font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; color: ${config.text_color || defaultConfig.text_color};">Add New Student</h2>
+            <form id="addForm" onsubmit="handleFormSubmit(event, '${type}')">
+              <div class="form-group">
+                <label for="name" class="form-label" style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; color: ${config.text_color || defaultConfig.text_color};">Full Name</label>
+                <input type="text" id="name" name="name" class="form-input" required style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif;">
+              </div>
+              <div class="form-group">
+                <label for="email" class="form-label" style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; color: ${config.text_color || defaultConfig.text_color};">Email</label>
+                <input type="email" id="email" name="email" class="form-input" style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif;">
+              </div>
+              <div class="form-group">
+                <label for="phone" class="form-label" style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; color: ${config.text_color || defaultConfig.text_color};">Phone</label>
+                <input type="tel" id="phone" name="phone" class="form-input" style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif;">
+              </div>
+              <div class="form-group">
+                <label for="grade" class="form-label" style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; color: ${config.text_color || defaultConfig.text_color};">Grade</label>
+                <input type="text" id="grade" name="grade" class="form-input" style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif;">
+              </div>
+              <div class="form-group">
+                <label for="class" class="form-label" style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; color: ${config.text_color || defaultConfig.text_color};">Class</label>
+                <input type="text" id="class" name="class" class="form-input" style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif;">
+              </div>
+              <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                <button type="button" onclick="closeModal()" class="btn btn-secondary" style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif;">Cancel</button>
+                <button type="submit" id="submitBtn" class="btn btn-primary" style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif;">Add Student</button>
+              </div>
+            </form>
+          `;
+          break;
+
+        case 'teacher':
+          formFields = `
+            <h2 style="margin: 0 0 24px 0; font-size: ${(config.font_size || defaultConfig.font_size) * 1.5}px; font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; color: ${config.text_color || defaultConfig.text_color};">Add New Teacher</h2>
+            <form id="addForm" onsubmit="handleFormSubmit(event, '${type}')">
+              <div class="form-group">
+                <label for="name" class="form-label" style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; color: ${config.text_color || defaultConfig.text_color};">Full Name</label>
+                <input type="text" id="name" name="name" class="form-input" required style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif;">
+              </div>
+              <div class="form-group">
+                <label for="email" class="form-label" style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; color: ${config.text_color || defaultConfig.text_color};">Email</label>
+                <input type="email" id="email" name="email" class="form-input" style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif;">
+              </div>
+              <div class="form-group">
+                <label for="phone" class="form-label" style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; color: ${config.text_color || defaultConfig.text_color};">Phone</label>
+                <input type="tel" id="phone" name="phone" class="form-input" style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif;">
+              </div>
+              <div class="form-group">
+                <label for="subject" class="form-label" style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; color: ${config.text_color || defaultConfig.text_color};">Subject</label>
+                <input type="text" id="subject" name="subject" class="form-input" style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif;">
+              </div>
+              <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                <button type="button" onclick="closeModal()" class="btn btn-secondary" style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif;">Cancel</button>
+                <button type="submit" id="submitBtn" class="btn btn-primary" style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif;">Add Teacher</button>
+              </div>
+            </form>
+          `;
+          break;
+
+        case 'class':
+          formFields = `
+            <h2 style="margin: 0 0 24px 0; font-size: ${(config.font_size || defaultConfig.font_size) * 1.5}px; font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; color: ${config.text_color || defaultConfig.text_color};">Create New Class</h2>
+            <form id="addForm" onsubmit="handleFormSubmit(event, '${type}')">
+              <div class="form-group">
+                <label for="name" class="form-label" style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; color: ${config.text_color || defaultConfig.text_color};">Class Name</label>
+                <input type="text" id="name" name="name" class="form-input" required style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif;">
+              </div>
+              <div class="form-group">
+                <label for="grade" class="form-label" style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; color: ${config.text_color || defaultConfig.text_color};">Grade</label>
+                <input type="text" id="grade" name="grade" class="form-input" style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif;">
+              </div>
+              <div class="form-group">
+                <label for="subject" class="form-label" style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; color: ${config.text_color || defaultConfig.text_color};">Subject</label>
+                <input type="text" id="subject" name="subject" class="form-input" style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif;">
+              </div>
+              <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                <button type="button" onclick="closeModal()" class="btn btn-secondary" style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif;">Cancel</button>
+                <button type="submit" id="submitBtn" class="btn btn-primary" style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif;">Create Class</button>
+              </div>
+            </form>
+          `;
+          break;
+
+        case 'subject':
+          formFields = `
+            <h2 style="margin: 0 0 24px 0; font-size: ${(config.font_size || defaultConfig.font_size) * 1.5}px; font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; color: ${config.text_color || defaultConfig.text_color};">Add New Subject</h2>
+            <form id="addForm" onsubmit="handleFormSubmit(event, '${type}')">
+              <div class="form-group">
+                <label for="name" class="form-label" style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; color: ${config.text_color || defaultConfig.text_color};">Subject Name</label>
+                <input type="text" id="name" name="name" class="form-input" required style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif;">
+              </div>
+              <div class="form-group">
+                <label for="grade" class="form-label" style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; color: ${config.text_color || defaultConfig.text_color};">Grade</label>
+                <input type="text" id="grade" name="grade" class="form-input" style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif;">
+              </div>
+              <div class="form-group">
+                <label for="description" class="form-label" style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; color: ${config.text_color || defaultConfig.text_color};">Description</label>
+                <textarea id="description" name="description" class="form-textarea" style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif;"></textarea>
+              </div>
+              <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                <button type="button" onclick="closeModal()" class="btn btn-secondary" style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif;">Cancel</button>
+                <button type="submit" id="submitBtn" class="btn btn-primary" style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif;">Add Subject</button>
+              </div>
+            </form>
+          `;
+          break;
+
+        case 'exam':
+          formFields = `
+            <h2 style="margin: 0 0 24px 0; font-size: ${(config.font_size || defaultConfig.font_size) * 1.5}px; font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; color: ${config.text_color || defaultConfig.text_color};">Add Exam Result</h2>
+            <form id="addForm" onsubmit="handleFormSubmit(event, '${type}')">
+              <div class="form-group">
+                <label for="name" class="form-label" style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; color: ${config.text_color || defaultConfig.text_color};">Student Name</label>
+                <input type="text" id="name" name="name" class="form-input" required style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif;">
+              </div>
+              <div class="form-group">
+                <label for="subject" class="form-label" style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; color: ${config.text_color || defaultConfig.text_color};">Subject</label>
+                <input type="text" id="subject" name="subject" class="form-input" required style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif;">
+              </div>
+              <div class="form-group">
+                <label for="score" class="form-label" style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; color: ${config.text_color || defaultConfig.text_color};">Score (%)</label>
+                <input type="number" id="score" name="score" class="form-input" min="0" max="100" required style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif;">
+              </div>
+              <div class="form-group">
+                <label for="date" class="form-label" style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; color: ${config.text_color || defaultConfig.text_color};">Exam Date</label>
+                <input type="date" id="date" name="date" class="form-input" style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif;">
+              </div>
+              <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                <button type="button" onclick="closeModal()" class="btn btn-secondary" style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif;">Cancel</button>
+                <button type="submit" id="submitBtn" class="btn btn-primary" style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif;">Add Result</button>
+              </div>
+            </form>
+          `;
+          break;
+
+        case 'finance':
+          formFields = `
+            <h2 style="margin: 0 0 24px 0; font-size: ${(config.font_size || defaultConfig.font_size) * 1.5}px; font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; color: ${config.text_color || defaultConfig.text_color};">Add Transaction</h2>
+            <form id="addForm" onsubmit="handleFormSubmit(event, '${type}')">
+              <div class="form-group">
+                <label for="name" class="form-label" style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; color: ${config.text_color || defaultConfig.text_color};">Student Name</label>
+                <input type="text" id="name" name="name" class="form-input" required style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif;">
+              </div>
+              <div class="form-group">
+                <label for="description" class="form-label" style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; color: ${config.text_color || defaultConfig.text_color};">Description</label>
+                <input type="text" id="description" name="description" class="form-input" placeholder="e.g., Tuition Fee" style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif;">
+              </div>
+              <div class="form-group">
+                <label for="amount" class="form-label" style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; color: ${config.text_color || defaultConfig.text_color};">Amount ($)</label>
+                <input type="number" id="amount" name="amount" class="form-input" min="0" step="0.01" required style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif;">
+              </div>
+              <div class="form-group">
+                <label for="date" class="form-label" style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; color: ${config.text_color || defaultConfig.text_color};">Date</label>
+                <input type="date" id="date" name="date" class="form-input" style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif;">
+              </div>
+              <div class="form-group">
+                <label for="status" class="form-label" style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; color: ${config.text_color || defaultConfig.text_color};">Status</label>
+                <select id="status" name="status" class="form-select" style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif;">
+                  <option value="paid">Paid</option>
+                  <option value="pending">Pending</option>
+                </select>
+              </div>
+              <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                <button type="button" onclick="closeModal()" class="btn btn-secondary" style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif;">Cancel</button>
+                <button type="submit" id="submitBtn" class="btn btn-primary" style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif;">Add Transaction</button>
+              </div>
+            </form>
+          `;
+          break;
+
+        case 'attendance':
+          formFields = `
+            <h2 style="margin: 0 0 24px 0; font-size: ${(config.font_size || defaultConfig.font_size) * 1.5}px; font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; color: ${config.text_color || defaultConfig.text_color};">Mark Attendance</h2>
+            <form id="addForm" onsubmit="handleFormSubmit(event, '${type}')">
+              <div class="form-group">
+                <label for="name" class="form-label" style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; color: ${config.text_color || defaultConfig.text_color};">Name</label>
+                <input type="text" id="name" name="name" class="form-input" required style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif;">
+              </div>
+              <div class="form-group">
+                <label for="class" class="form-label" style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; color: ${config.text_color || defaultConfig.text_color};">Class</label>
+                <input type="text" id="class" name="class" class="form-input" style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif;">
+              </div>
+              <div class="form-group">
+                <label for="date" class="form-label" style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; color: ${config.text_color || defaultConfig.text_color};">Date</label>
+                <input type="date" id="date" name="date" class="form-input" value="${new Date().toISOString().split('T')[0]}" style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif;">
+              </div>
+              <div class="form-group">
+                <label for="attendance" class="form-label" style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; color: ${config.text_color || defaultConfig.text_color};">Status</label>
+                <select id="attendance" name="attendance" class="form-select" style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif;">
+                  <option value="present">Present</option>
+                  <option value="absent">Absent</option>
+                </select>
+              </div>
+              <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                <button type="button" onclick="closeModal()" class="btn btn-secondary" style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif;">Cancel</button>
+                <button type="submit" id="submitBtn" class="btn btn-primary" style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif;">Mark Attendance</button>
+              </div>
+            </form>
+          `;
+          break;
+
+        case 'message':
+          formFields = `
+            <h2 style="margin: 0 0 24px 0; font-size: ${(config.font_size || defaultConfig.font_size) * 1.5}px; font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; color: ${config.text_color || defaultConfig.text_color};">Send Message</h2>
+            <form id="addForm" onsubmit="handleFormSubmit(event, '${type}')">
+              <div class="form-group">
+                <label for="name" class="form-label" style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; color: ${config.text_color || defaultConfig.text_color};">Title</label>
+                <input type="text" id="name" name="name" class="form-input" required style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif;">
+              </div>
+              <div class="form-group">
+                <label for="subject" class="form-label" style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; color: ${config.text_color || defaultConfig.text_color};">Category</label>
+                <select id="subject" name="subject" class="form-select" style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif;">
+                  <option value="General">General</option>
+                  <option value="Academic">Academic</option>
+                  <option value="Event">Event</option>
+                  <option value="Urgent">Urgent</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="message" class="form-label" style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; color: ${config.text_color || defaultConfig.text_color};">Message</label>
+                <textarea id="message" name="message" class="form-textarea" required style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif;"></textarea>
+              </div>
+              <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                <button type="button" onclick="closeModal()" class="btn btn-secondary" style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif;">Cancel</button>
+                <button type="submit" id="submitBtn" class="btn btn-primary" style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif;">Send Message</button>
+              </div>
+            </form>
+          `;
+          break;
+      }
+
+      modalBody.innerHTML = formFields;
+      modalBackdrop.classList.add('active');
+    }
+
+    function openEditModal(backendId) {
+      const record = allData.find(d => d.__backendId === backendId);
+      if (!record) return;
+
+      const config = window.elementSdk ? window.elementSdk.config : defaultConfig;
+      const modalBody = document.getElementById('modalBody');
+      const modalBackdrop = document.getElementById('modalBackdrop');
+
+      const formFields = `
+        <h2 style="margin: 0 0 24px 0; font-size: ${(config.font_size || defaultConfig.font_size) * 1.5}px; font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; color: ${config.text_color || defaultConfig.text_color};">Edit ${record.type}</h2>
+        <form id="editForm" onsubmit="handleEditSubmit(event, '${backendId}')">
+          ${Object.keys(record).filter(key => !['__backendId', 'type', 'id', 'createdAt'].includes(key)).map(key => {
+            if (key === 'status' || key === 'attendance') {
+              return `
+                <div class="form-group">
+                  <label for="${key}" class="form-label" style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; color: ${config.text_color || defaultConfig.text_color};">${key.charAt(0).toUpperCase() + key.slice(1)}</label>
+                  <select id="${key}" name="${key}" class="form-select" style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif;">
+                    ${key === 'status' ? 
+                      `<option value="active" ${record[key] === 'active' ? 'selected' : ''}>Active</option>
+                       <option value="paid" ${record[key] === 'paid' ? 'selected' : ''}>Paid</option>
+                       <option value="pending" ${record[key] === 'pending' ? 'selected' : ''}>Pending</option>` :
+                      `<option value="present" ${record[key] === 'present' ? 'selected' : ''}>Present</option>
+                       <option value="absent" ${record[key] === 'absent' ? 'selected' : ''}>Absent</option>`
+                    }
+                  </select>
+                </div>
+              `;
+            } else if (key === 'message' || key === 'description') {
+              return `
+                <div class="form-group">
+                  <label for="${key}" class="form-label" style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; color: ${config.text_color || defaultConfig.text_color};">${key.charAt(0).toUpperCase() + key.slice(1)}</label>
+                  <textarea id="${key}" name="${key}" class="form-textarea" style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif;">${record[key] || ''}</textarea>
+                </div>
+              `;
+            } else if (key === 'amount' || key === 'score') {
+              return `
+                <div class="form-group">
+                  <label for="${key}" class="form-label" style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; color: ${config.text_color || defaultConfig.text_color};">${key.charAt(0).toUpperCase() + key.slice(1)}</label>
+                  <input type="number" id="${key}" name="${key}" class="form-input" value="${record[key] || ''}" style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif;">
+                </div>
+              `;
+            } else if (key === 'date') {
+              const dateValue = record[key] ? new Date(record[key]).toISOString().split('T')[0] : '';
+              return `
+                <div class="form-group">
+                  <label for="${key}" class="form-label" style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; color: ${config.text_color || defaultConfig.text_color};">${key.charAt(0).toUpperCase() + key.slice(1)}</label>
+                  <input type="date" id="${key}" name="${key}" class="form-input" value="${dateValue}" style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif;">
+                </div>
+              `;
+            } else {
+              return `
+                <div class="form-group">
+                  <label for="${key}" class="form-label" style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; color: ${config.text_color || defaultConfig.text_color};">${key.charAt(0).toUpperCase() + key.slice(1)}</label>
+                  <input type="text" id="${key}" name="${key}" class="form-input" value="${record[key] || ''}" style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif;">
+                </div>
+              `;
+            }
+          }).join('')}
+          <div style="display: flex; gap: 12px; justify-content: flex-end;">
+            <button type="button" onclick="closeModal()" class="btn btn-secondary" style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif;">Cancel</button>
+            <button type="submit" id="submitBtn" class="btn btn-success" style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif;">Update</button>
+          </div>
+        </form>
+      `;
+
+      modalBody.innerHTML = formFields;
+      modalBackdrop.classList.add('active');
+    }
+
+    async function handleFormSubmit(event, type) {
+      event.preventDefault();
+      
+      if (allData.length >= 999) {
+        showToast('Maximum limit of 999 records reached. Please delete some records first.');
+        return;
+      }
+
+      const form = event.target;
+      const submitBtn = document.getElementById('submitBtn');
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<div class="spinner"></div> Adding...';
+
+      const formData = new FormData(form);
+      const data = {
+        id: Date.now().toString(),
+        type: type,
+        createdAt: new Date().toISOString()
+      };
+
+      for (let [key, value] of formData.entries()) {
+        if (key === 'amount' || key === 'score') {
+          data[key] = parseFloat(value) || 0;
+        } else {
+          data[key] = value;
+        }
+      }
+
+      const result = await window.dataSdk.create(data);
+
+      if (result.isOk) {
+        showToast('Record added successfully!');
+        closeModal();
+      } else {
+        showToast('Failed to add record. Please try again.');
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = 'Add';
+      }
+    }
+
+    async function handleEditSubmit(event, backendId) {
+      event.preventDefault();
+
+      const record = allData.find(d => d.__backendId === backendId);
+      if (!record) return;
+
+      const form = event.target;
+      const submitBtn = document.getElementById('submitBtn');
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<div class="spinner"></div> Updating...';
+
+      const formData = new FormData(form);
+      const updatedRecord = { ...record };
+
+      for (let [key, value] of formData.entries()) {
+        if (key === 'amount' || key === 'score') {
+          updatedRecord[key] = parseFloat(value) || 0;
+        } else {
+          updatedRecord[key] = value;
+        }
+      }
+
+      const result = await window.dataSdk.update(updatedRecord);
+
+      if (result.isOk) {
+        showToast('Record updated successfully!');
+        closeModal();
+      } else {
+        showToast('Failed to update record. Please try again.');
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = 'Update';
+      }
+    }
+
+    async function deleteRecord(backendId) {
+      const record = allData.find(d => d.__backendId === backendId);
+      if (!record) return;
+
+      const config = window.elementSdk ? window.elementSdk.config : defaultConfig;
+      const modalBody = document.getElementById('modalBody');
+      const modalBackdrop = document.getElementById('modalBackdrop');
+
+      modalBody.innerHTML = `
+        <h2 style="margin: 0 0 16px 0; font-size: ${(config.font_size || defaultConfig.font_size) * 1.5}px; font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; color: ${config.text_color || defaultConfig.text_color};">Confirm Delete</h2>
+        <p style="margin: 0 0 24px 0; font-size: ${(config.font_size || defaultConfig.font_size)}px; font-family: ${config.font_family || defaultConfig.font_family}, sans-serif; color: ${config.text_color || defaultConfig.text_color};">Are you sure you want to delete this ${record.type}?</p>
+        <div style="display: flex; gap: 12px; justify-content: flex-end;">
+          <button onclick="closeModal()" class="btn btn-secondary" style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif;">Cancel</button>
+          <button onclick="confirmDelete('${backendId}')" id="deleteBtn" class="btn btn-danger" style="font-family: ${config.font_family || defaultConfig.font_family}, sans-serif;">Delete</button>
+        </div>
+      `;
+
+      modalBackdrop.classList.add('active');
+    }
+
+    async function confirmDelete(backendId) {
+      const record = allData.find(d => d.__backendId === backendId);
+      if (!record) return;
+
+      const deleteBtn = document.getElementById('deleteBtn');
+      deleteBtn.disabled = true;
+      deleteBtn.innerHTML = '<div class="spinner"></div> Deleting...';
+
+      const result = await window.dataSdk.delete(record);
+
+      if (result.isOk) {
+        showToast('Record deleted successfully!');
+        closeModal();
+      } else {
+        showToast('Failed to delete record. Please try again.');
+        deleteBtn.disabled = false;
+        deleteBtn.innerHTML = 'Delete';
+      }
+    }
+
+    function closeModal() {
+      const modalBackdrop = document.getElementById('modalBackdrop');
+      modalBackdrop.classList.remove('active');
+    }
+
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      const toastMessage = document.getElementById('toastMessage');
+      toastMessage.textContent = message;
+      toast.classList.add('active');
+      setTimeout(() => {
+        toast.classList.remove('active');
+      }, 3000);
+    }
+
+    window.addEventListener('click', (e) => {
+      const modalBackdrop = document.getElementById('modalBackdrop');
+      if (e.target === modalBackdrop) {
+        closeModal();
+      }
+    });
+
+    initializeApp();
+  </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9a3dcae161729cce',t:'MTc2NDAzODU0NC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
